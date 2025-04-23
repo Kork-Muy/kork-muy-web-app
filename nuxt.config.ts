@@ -14,7 +14,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'EventHub',
+      title: 'Kork Muy',
       meta: [
         { name: 'description', content: 'A modern event management platform' },
         { name: 'theme-color', content: '#ffffff' }
@@ -25,8 +25,8 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
-      name: 'EventHub',
-      short_name: 'EventHub',
+      name: 'Kork Muy',
+      short_name: 'KorkMuy',
       theme_color: '#ffffff',
       icons: [
         {
