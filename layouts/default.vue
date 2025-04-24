@@ -9,6 +9,9 @@
           <NuxtLink to="/" class="text-foreground hover:text-primary transition-colors">
             Home
           </NuxtLink>
+          <NuxtLink to="/tickets" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-muted">
+            Tickets
+          </NuxtLink>
           <NuxtLink to="/events" class="text-foreground hover:text-primary transition-colors">
             Events
           </NuxtLink>
@@ -45,6 +48,9 @@
         <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
           <NuxtLink to="/" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-muted">
             Home
+          </NuxtLink>
+          <NuxtLink to="/tickets" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-muted">
+            Tickets
           </NuxtLink>
           <NuxtLink to="/events" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-muted">
             Events
@@ -114,6 +120,7 @@
             </ul>
           </div>
         </div>
+        <PwaInstallButton />
         <div class="mt-8 pt-8 border-t border-border">
           <p class="text-center text-muted-foreground">
             &copy; {{ new Date().getFullYear() }} KorkMuy. All rights reserved.
@@ -127,6 +134,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useUserStore } from '~/stores/user'
+import PwaInstallButton from '~/components/PwaInstallButton.vue'
 
 const userStore = useUserStore()
 const isAuthenticated = computed(() => userStore.isAuthenticated)

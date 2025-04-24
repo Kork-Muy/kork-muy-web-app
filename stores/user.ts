@@ -9,8 +9,13 @@ interface User {
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    currentUser: null as User | null,
-    isAuthenticated: false,
+    currentUser: {
+        id: '1',
+        name: 'Orng',
+        email: "neuporng123@gmail.com",
+        avatar: '/images/avatar.jpg'
+    } as User,
+    isAuthenticated: true,
     isLoading: false,
     error: null as string | null,
   }),
