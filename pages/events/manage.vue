@@ -26,7 +26,7 @@
               Start Scanner
             </UiButton>
           </div>
-          
+
           <div v-else class="space-y-4">
             <div v-if="cameraError" class="text-center py-8">
               <p class="text-destructive mb-4">{{ cameraError }}</p>
@@ -44,17 +44,13 @@
                 Stop Scanner
               </UiButton>
             </div>
-            
+
             <div v-else>
               <div id="reader" class="w-full max-w-md mx-auto"></div>
               <div class="flex justify-center space-x-4 mt-4">
                 <UiButton variant="outline" @click="stopScanner">
                   <Icon name="ph:x" class="mr-2 h-4 w-4" />
                   Stop Scanner
-                </UiButton>
-                <UiButton variant="outline" @click="switchCamera">
-                  <Icon name="ph:arrows-left-right" class="mr-2 h-4 w-4" />
-                  Switch Camera
                 </UiButton>
               </div>
             </div>
@@ -69,7 +65,7 @@
           <div v-if="scanResults.length === 0" class="text-center py-8">
             <p class="text-muted-foreground">No tickets scanned yet</p>
           </div>
-          
+
           <div v-else class="space-y-4">
             <div v-for="result in scanResults" :key="result.timestamp" class="p-4 border rounded-lg">
               <div class="flex justify-between items-start">
@@ -116,7 +112,7 @@ const startScanner = async () => {
     // Get available cameras
     const devices = await Html5Qrcode.getCameras()
     if (devices && devices.length) {
-      const cameraId = currentCamera.value === 'environment' 
+      const cameraId = currentCamera.value === 'environment'
         ? devices.find(d => d.label.toLowerCase().includes('back'))?.id || devices[0].id
         : devices.find(d => d.label.toLowerCase().includes('front'))?.id || devices[0].id
 
@@ -154,11 +150,6 @@ const stopScanner = async () => {
 }
 
 // Switch between front and back cameras
-const switchCamera = async () => {
-  await stopScanner()
-  currentCamera.value = currentCamera.value === 'environment' ? 'user' : 'environment'
-  await startScanner()
-}
 
 // Handle successful scan
 const onScanSuccess = (decodedText) => {
@@ -167,6 +158,7 @@ const onScanSuccess = (decodedText) => {
     ticketId: decodedText,
     timestamp: new Date()
   })
+  stopScanner()
 }
 
 // Handle scan failure
@@ -217,4 +209,4 @@ onUnmounted(() => {
 #reader__dashboard {
   display: none !important;
 }
-</style> 
+</style>
