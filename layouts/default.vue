@@ -15,6 +15,9 @@
           <NuxtLink to="/events" class="text-foreground hover:text-primary transition-colors">
             Events
           </NuxtLink>
+          <NuxtLink to="/events/manage" class="text-foreground hover:text-primary transition-colors">
+            Manage
+          </NuxtLink>
           <NuxtLink to="/create" class="text-foreground hover:text-primary transition-colors">
             Create Event
           </NuxtLink>
@@ -54,6 +57,9 @@
           </NuxtLink>
           <NuxtLink to="/events" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-muted">
             Events
+          </NuxtLink>
+          <NuxtLink to="/events/manage" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-muted">
+            Manage
           </NuxtLink>
           <NuxtLink to="/create" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-muted">
             Create Event
