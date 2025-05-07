@@ -9,13 +9,14 @@ interface User {
 
 export const useUserStore = defineStore('user', {
   state: () => ({
+    token: "",
     currentUser: {
         id: '1',
         name: 'Orng',
         email: "neuporng123@gmail.com",
         avatar: '/images/avatar.jpg'
     } as User,
-    isAuthenticated: true,
+    isAuthenticated: false,
     isLoading: false,
     error: null as string | null,
   }),
@@ -51,6 +52,12 @@ export const useUserStore = defineStore('user', {
         this.isLoading = false
       }
     },
+
+    async googleLogin() {
+      this.isLoading = true
+      this.error = null
+       window.location.href = 'http://localhost:3001/api/auth/google'
+    },
     
     async logout() {
       this.isLoading = true
@@ -68,6 +75,29 @@ export const useUserStore = defineStore('user', {
       }
     },
     
+    async setUser(token: string) {
+      const router = useRouter()
+      this.isLoading = true
+      this.error = null
+      this.token = token
+      this.isAuthenticated = true
+      console.log('setUser', token)
+      const response = await $fetch('http://localhost:3001/api/auth/profile', {
+        headers: {  
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log(response)
+      if (response) {
+        this.currentUser.id = response.id
+        this.currentUser.name = response.firstName + ' ' + response.lastName
+        this.currentUser.email = response.email
+        this.currentUser.avatar = response.avatar
+      }
+      this.isLoading = false
+      router.push('/')
+    },
+
     async register(name: string, email: string, password: string) {
       this.isLoading = true
       this.error = null

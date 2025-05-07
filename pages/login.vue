@@ -66,6 +66,10 @@
               {{ isLoading ? 'Processing...' : (isRegister ? 'Create Account' : 'Login') }}
             </UiButton>
           </form>
+          <UiButton type="button" class="w-full" @click="handleGoogleLogin">
+              <UiIcon name="google" />
+              Login with Google
+          </UiButton>
           
           <div class="mt-6 text-center">
             <p class="text-sm text-muted-foreground">
@@ -101,6 +105,10 @@ const form = ref({
   password: '',
   confirmPassword: ''
 })
+
+const handleGoogleLogin = async () => {
+  await userStore.googleLogin();
+}
 
 const handleSubmit = async () => {
   error.value = null
