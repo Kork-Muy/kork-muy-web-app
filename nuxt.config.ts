@@ -58,7 +58,7 @@ export default defineNuxtConfig({
       ]
     },
     workbox: {
-      navigateFallback: '/',
+      navigateFallback: '',
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
       runtimeCaching: [
         {
@@ -83,8 +83,7 @@ export default defineNuxtConfig({
     },
     devOptions: {
       enabled: true,
-      type: 'module',
-      navigateFallback: '/'
+      type: 'module'
     },
     includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
     strategies: 'generateSW',
