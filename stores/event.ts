@@ -21,6 +21,9 @@ export const useEventStore = defineStore('event', {
   }),
   
   getters: {
+    getListEvent: (state) => {
+      return state.events;
+    },
     getEventById: (state) => (id: string) => {
       return state.events.find(event => event.id === id)
     },
@@ -40,7 +43,8 @@ export const useEventStore = defineStore('event', {
       try {
         // In a real app, this would be an API call
         // For now, we'll use mock data
-        await new Promise(resolve => setTimeout(resolve, 500))
+        const response = await $fetch('http://localhost:3001/api/events')
+        console.log(response)
         
         this.events = [
           {
