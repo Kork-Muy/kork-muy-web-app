@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia';
-import type { Event } from '~/models/dto/event/IEvent';
+import type { IEvent } from '~/models/dto/event/IEvent';
+import { Event } from '~/models/dto/event/Event';
 
 export const useEventStore = defineStore('event', {
   state: () => ({
-    events: [] as Event[],
+    events: [] as IEvent[],
     isLoading: false,
     error: null as string | null,
   }),
@@ -13,11 +14,8 @@ export const useEventStore = defineStore('event', {
       return state.events;
     },
     getEventById: (state) => (id: string) => {
-      return state.events.find(event => event.id === id)
+      return state.events.find((event: IEvent) => event.id === id)
     },
-    // getEventsByCategory: (state) => (category: string) => {
-    //   return state.events.filter(event => event.category === category)
-    // },
     getFeaturedEvents: (state) => {
       return state.events.slice(0, 4)
     }
