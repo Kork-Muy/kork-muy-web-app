@@ -11,7 +11,9 @@ export default defineNuxtConfig({
     'nuxt-icon',
     'shadcn-nuxt'
   ],
-
+  imports: {
+    dirs: ['models', 'stores']
+  },
   app: {
     head: {
       title: 'Kork Muy',

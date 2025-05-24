@@ -1,46 +1,64 @@
 import { defineStore } from 'pinia'
-
-interface User {
-  id: string
-  name: string
-  email: string
-  avatar?: string
-}
+import { LoginRequest, type ILoginRequest } from '~/models/api/login/request';
+import type { ILoginResponse } from '~/models/api/login/response';
+import type { IProfileResponse } from '~/models/api/profile/response';
+import type { IRefreshTokenResponse } from '~/models/api/refresh-token/response';
+import { RegisterRequest, type IRegisterRequest } from '~/models/api/register/request';
+import type { IRegisterResponse } from '~/models/api/register/response';
+import type { IUserDto } from '~/models/dto/user/IUser.dto'
+import { UserDto } from '~/models/dto/user/User.dto'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    token: "",
+    accessToken: "",
+    refreshToken: "",
     currentUser: {
-        id: '1',
-        name: 'Orng',
-        email: "neuporng123@gmail.com",
-        avatar: '/images/avatar.jpg'
-    } as User,
-    isAuthenticated: false,
+      id: '',
+      firstname: '',
+      lastname: '',
+      email: '',
+      avatar: '',
+    } as IUserDto,
+    lastCheckedAt: 0,
     isLoading: false,
+    isAuthenticated: false,
     error: null as string | null,
   }),
   
   getters: {
-    user: (state) => state.currentUser,
+    user: (state): UserDto | null => {
+      if(state.currentUser.id) {
+        return new UserDto(state.currentUser);
+      } else if(window) {
+        return new UserDto(JSON.parse(localStorage.getItem("user") || "{}"));
+      }
+      return null;
+    },
   },
   
   actions: {
-    async login(email: string, password: string) {
+    async login(request: ILoginRequest) {
       this.isLoading = true
       this.error = null
       
       try {
         // In a real app, this would be an API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        const requestDto = new LoginRequest(request);
         
-        // Mock successful login
-        this.currentUser = {
-          id: '1',
-          name: 'John Doe',
-          email: email,
-          avatar: '/images/avatar.jpg'
+        const response = await $fetch('http://localhost:3001/api/auth/login', {
+          method: 'POST',
+          body: requestDto.toString()
+        }) as ILoginResponse;
+
+        this.currentUser = new UserDto(response.user);
+        this.accessToken = response.access_token;
+        this.refreshToken = response.refresh_token;
+        if(window) {
+          localStorage.setItem("user", JSON.stringify(this.currentUser));
+          localStorage.setItem("access_token", response.access_token);
+          localStorage.setItem("refresh_token", response.refresh_token);
         }
+
         this.isAuthenticated = true
         
         return this.currentUser
@@ -66,8 +84,21 @@ export const useUserStore = defineStore('user', {
         // In a real app, this would be an API call
         await new Promise(resolve => setTimeout(resolve, 500))
         
-        this.currentUser = null
-        this.isAuthenticated = false
+        this.currentUser = {
+          id: '',
+          firstname: '',
+          lastname: '',
+          email: '',
+          avatar: '',
+        } as IUserDto;
+        this.accessToken = '';
+        this.refreshToken = '';
+        this.isAuthenticated = false;
+        if(window) {
+          localStorage.removeItem("user");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("refresh_token");
+        }
       } catch (error) {
         console.error(error)
       } finally {
@@ -75,44 +106,133 @@ export const useUserStore = defineStore('user', {
       }
     },
     
-    async setUser(token: string) {
+    async setUser(accessToken: string, refreshToken: string) {
       const router = useRouter()
       this.isLoading = true
       this.error = null
-      this.token = token
-      this.isAuthenticated = true
-      console.log('setUser', token)
+      this.accessToken = accessToken;
+      this.refreshToken = refreshToken;
       const response = await $fetch('http://localhost:3001/api/auth/profile', {
         headers: {  
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${accessToken}`
         }
-      });
-      console.log(response)
+      }) as IProfileResponse;
       if (response) {
-        this.currentUser.id = response.id
-        this.currentUser.name = response.firstName + ' ' + response.lastName
-        this.currentUser.email = response.email
-        this.currentUser.avatar = response.avatar
+        this.currentUser = response.user;
+        this.isAuthenticated = true;
+        if(window) {
+          localStorage.setItem("user", JSON.stringify(this.currentUser));
+          localStorage.setItem("access_token", accessToken);
+          localStorage.setItem("refresh_token", refreshToken);
+        }
       }
       this.isLoading = false
       router.push('/')
     },
 
-    async register(name: string, email: string, password: string) {
+    async checkIsAuthenticated() {
+      if(this.lastCheckedAt > Date.now() - 1000 * 60 * 5) {
+        return true;
+      }
+      let result = false;
+      try {
+        let tempToken = '';
+        if(this.accessToken) {
+          tempToken = this.accessToken;
+        } else if(window) {
+          tempToken = localStorage.getItem("access_token") || '';
+        }
+        const response = await $fetch('http://localhost:3001/api/auth/profile', {
+          headers: {  
+            Authorization: `Bearer ${tempToken}`
+          }
+        });
+        console.log("isAuthenticated", response);
+        this.currentUser = new UserDto(response as IUserDto);
+        this.accessToken = tempToken;
+        this.isAuthenticated = true;
+        if(window) {
+          localStorage.setItem("user", JSON.stringify(this.currentUser));
+          localStorage.setItem("access_token", tempToken);
+        }
+        result = true;
+      } catch (error: any) {
+        if(error?.statusCode === 401) {
+          result = await this.refreshNewAccessToken();
+        }
+        console.error("isAuthenticated", error);
+        this.isAuthenticated = false;
+        if(window) {
+          localStorage.removeItem("user");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("refresh_token");
+        }
+        result = false;
+      } finally {
+        if(this.isAuthenticated) {
+          this.lastCheckedAt = Date.now();
+        }
+        return result;
+      }
+    },
+
+    async refreshNewAccessToken() {
+      try {
+        let refreshToken = '';
+        if(this.refreshToken) {
+          refreshToken = this.refreshToken;
+        } else if(window) {
+          refreshToken = localStorage.getItem("refresh_token") || '';
+        }
+        const response = await $fetch('http://localhost:3001/api/auth/refresh-token', {
+          method: 'POST',
+          headers: {  
+            Authorization: `Bearer ${refreshToken}`
+          }
+        }) as IRefreshTokenResponse;
+        this.currentUser = new UserDto(response.user);
+        this.accessToken = response.access_token;
+        if(window) {
+          localStorage.setItem("user", JSON.stringify(this.currentUser));
+          localStorage.setItem("access_token", response.access_token);
+        }
+        this.isAuthenticated = true;
+        console.log("refresh token", response);
+        return true;
+      } catch (error) {
+        console.error("refresh token", error);
+        this.isAuthenticated = false;
+        
+        if(window) {
+          localStorage.removeItem("user");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("refresh_token");
+        }
+        return false;
+      }
+    },
+
+    async register(request: IRegisterRequest) {
       this.isLoading = true
       this.error = null
       
       try {
-        // In a real app, this would be an API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
+        const requestDto = new RegisterRequest(request);
+
+        const response = await $fetch('http://localhost:3001/api/auth/register', {
+          method: 'POST',
+          body: requestDto.toString()
+        }) as IRegisterResponse;
         // Mock successful registration
-        this.currentUser = {
-          id: Date.now().toString(),
-          name,
-          email,
-          avatar: '/images/avatar.jpg'
+        this.currentUser = new UserDto(response.user);
+        this.accessToken = response.access_token;
+        this.refreshToken = response.refresh_token;
+        if(window) {
+          localStorage.setItem("user", JSON.stringify(this.currentUser));
+          localStorage.setItem("access_token", response.access_token);
+          localStorage.setItem("refresh_token", response.refresh_token);
         }
+
         this.isAuthenticated = true
         
         return this.currentUser

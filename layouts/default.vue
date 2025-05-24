@@ -26,7 +26,7 @@
           </NuxtLink>
           <div v-else class="relative" @click="toggleUserMenu" @keydown.escape="isUserMenuOpen = false">
             <button class="flex items-center space-x-1 focus:outline-none">
-              <span>{{ user?.name }}</span>
+              <span>{{ user?.fullName || 'Guest' }}</span>
               <Icon name="heroicons:chevron-down" class="w-4 h-4" />
             </button>
             <div v-if="isUserMenuOpen" class="absolute right-0 mt-2 w-48 bg-card rounded-md shadow-lg py-1 z-10">
