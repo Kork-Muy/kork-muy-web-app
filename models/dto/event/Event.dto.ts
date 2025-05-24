@@ -1,6 +1,6 @@
-import type { IEvent } from './IEvent';
+import type { IEventDto } from './IEvent.dto';
 
-export class Event implements IEvent {
+export class EventDto implements IEventDto {
     id: string;
     title: string;
     coverImageUrl: string;
@@ -18,7 +18,7 @@ export class Event implements IEvent {
     createdAt: Date;
     updatedAt: Date;
 
-    constructor(data: IEvent) {
+    constructor(data: IEventDto) {
         this.id = data.id;
         this.title = data.title;
         this.coverImageUrl = data.coverImageUrl;

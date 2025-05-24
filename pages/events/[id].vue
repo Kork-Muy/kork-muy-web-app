@@ -28,23 +28,23 @@
         <!-- Event Details -->
         <div class="lg:col-span-2">
           <img 
-            :src="event.image || '/images/placeholder.jpg'" 
+            :src="event.coverImageUrl || '/images/placeholder.jpg'" 
             :alt="event.title"
             class="w-full h-64 md:h-96 object-cover rounded-lg mb-6"
           />
           
           <div class="flex flex-wrap gap-2 mb-6">
-            <UiBadge>{{ event.category }}</UiBadge>
+            <!-- <UiBadge>{{ event.category }}</UiBadge> -->
             <UiBadge variant="outline">
               <Icon name="heroicons:users" class="w-4 h-4 mr-1" />
-              {{ event.attendees }} attendees
+              {{ 0 }} attendees
             </UiBadge>
-            <UiBadge variant="outline" v-if="event.price">
+            <!-- <UiBadge variant="outline" v-if="event.price">
               ${{ event.price }}
             </UiBadge>
             <UiBadge variant="outline" v-else class="text-green-600">
               Free
-            </UiBadge>
+            </UiBadge> -->
           </div>
           
           <h1 class="text-3xl md:text-4xl font-bold mb-4">{{ event.title }}</h1>
@@ -52,7 +52,7 @@
           <div class="flex items-center text-muted-foreground mb-6">
             <div class="flex items-center mr-4">
               <Icon name="heroicons:calendar" class="w-5 h-5 mr-1" />
-              <span>{{ formatDate(event.date) }}</span>
+              <span>{{ event.formattedDate }}</span>
             </div>
             <div class="flex items-center">
               <Icon name="heroicons:map-pin" class="w-5 h-5 mr-1" />
@@ -69,7 +69,7 @@
             <UiTabsContent value="details">
               <UiCard>
                 <UiCardHeader>
-                  <UiCardTitle>Event Details</UiCardTitle>
+                  <UiCardTitle>Details</UiCardTitle>
                 </UiCardHeader>
                 <UiCardContent>
                   <p class="text-foreground leading-relaxed">
@@ -129,18 +129,22 @@
             </UiCardHeader>
             <UiCardContent>
               <div class="mb-4">
-                <p class="text-2xl font-bold">
+                <!-- <p class="text-2xl font-bold">
                   <span v-if="event.price">${{ event.price }}</span>
                   <span v-else class="text-green-600">Free</span>
-                </p>
+                </p> -->
               </div>
               
               <div class="space-y-4">
                 <div>
                   <UiLabel for="tickets">Number of Tickets</UiLabel>
-                  <UiSelect id="tickets" v-model="ticketCount" class="mt-1">
-                    <option v-for="i in 5" :key="i" :value="i">{{ i }}</option>
-                  </UiSelect>
+                  <UiInput 
+                    type="number"
+                    id="tickets" 
+                    v-model="ticketCount" 
+                    class="mt-1" 
+                    min="1"
+                    />
                 </div>
                 
                 <UiButton class="w-full" size="lg">
@@ -150,11 +154,7 @@
                 <div class="text-sm text-muted-foreground">
                   <p class="flex items-center mb-1">
                     <Icon name="heroicons:clock" class="w-4 h-4 mr-1" />
-                    <span>{{ formatDate(event.date) }}</span>
-                  </p>
-                  <p class="flex items-center">
-                    <Icon name="heroicons:users" class="w-4 h-4 mr-1" />
-                    <span>{{ event.attendees }} people attending</span>
+                    <span>{{ event.formattedDate }}</span>
                   </p>
                 </div>
               </div>
@@ -185,7 +185,8 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { EventDto } from '~/models/dto/event/Event.dto'
 import { useEventStore } from '~/stores/event'
 
 const route = useRoute()
@@ -195,10 +196,14 @@ const { isLoading } = storeToRefs(eventStore)
 const ticketCount = ref(1)
 
 const event = computed(() => {
-  return eventStore.getEventById(route.params.id)
+  const eventDto = eventStore.getEventById(route.params.id as string);
+  if(eventDto) {
+    return new EventDto(eventDto);
+  }
+  return null;
 })
 
-const formatDate = (dateString) => {
+const formatDate = (dateString: string) => {
   const date = new Date(dateString)
   return new Intl.DateTimeFormat('en-US', { 
     weekday: 'long',

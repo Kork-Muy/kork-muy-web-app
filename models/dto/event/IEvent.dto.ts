@@ -1,4 +1,4 @@
-export interface IEvent {
+export interface IEventDto {
     id: string,
     title: string,
     coverImageUrl: string,

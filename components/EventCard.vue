@@ -43,18 +43,18 @@
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import type { IEvent } from '~/models/dto/event/IEvent';
-import { Event } from '~/models/dto/event/Event';
+import type { IEventDto } from '~/models/dto/event/IEvent.dto';
+import { EventDto } from '~/models/dto/event/Event.dto';
 
 const props = defineProps({
   event: {
-    type: Object as PropType<IEvent>,
+    type: Object as PropType<IEventDto>,
     required: true
   }
 })
 
 const eventObject = computed(() => {
-  return new Event(props.event)
+  return new EventDto(props.event)
 })
 
 </script>

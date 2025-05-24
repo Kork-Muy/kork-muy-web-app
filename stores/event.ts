@@ -1,20 +1,32 @@
 import { defineStore } from 'pinia';
-import type { IEvent } from '~/models/dto/event/IEvent';
-import { Event } from '~/models/dto/event/Event';
+import type { IEventDto } from '~/models/dto/event/IEvent.dto';
+import { EventDto } from '~/models/dto/event/Event.dto';
 
 export const useEventStore = defineStore('event', {
   state: () => ({
-    events: [] as IEvent[],
+    events: [] as IEventDto[],
     isLoading: false,
     error: null as string | null,
   }),
   
   getters: {
     getListEvent: (state) => {
-      return state.events;
+      if(state.events.length > 0) {
+        return state.events;
+      }
+      if(window) {
+        return JSON.parse(localStorage.getItem("events") || "[]");
+      }
+      return [];
     },
     getEventById: (state) => (id: string) => {
-      return state.events.find((event: IEvent) => event.id === id)
+      if(state.events.length > 0) {
+        return state.events.find((event: IEventDto) => event.id === id);
+      }
+      if(window) {
+        return JSON.parse(localStorage.getItem("events") || "[]").find((event: IEventDto) => event.id === id);
+      }
+      return null;
     },
     getFeaturedEvents: (state) => {
       return state.events.slice(0, 4)
@@ -31,7 +43,10 @@ export const useEventStore = defineStore('event', {
         // For now, we'll use mock data
         const response = await $fetch(process.env.API_URL || 'http://localhost:3001' + '/api/events')
         console.log("response", response);
-        this.events = response as Event[];
+        this.events = response as EventDto[];
+        if(window) {
+          localStorage.setItem("events", JSON.stringify(this.events));
+        }
       } catch (error) {
         this.error = 'Failed to fetch events'
         console.error(error)
@@ -40,7 +55,7 @@ export const useEventStore = defineStore('event', {
       }
     },
     
-    async addEvent(event: Omit<Event, 'id'>) {
+    async addEvent(event: Omit<EventDto, 'id'>) {
       this.isLoading = true
       this.error = null
       
@@ -48,7 +63,7 @@ export const useEventStore = defineStore('event', {
         // In a real app, this would be an API call
         await new Promise(resolve => setTimeout(resolve, 500))
         
-        const newEvent: Event = {
+        const newEvent: EventDto = {
           ...event,
           id: Date.now().toString(),
         }
