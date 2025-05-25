@@ -39,43 +39,15 @@ export const useTicketStore = defineStore('ticket', {
       this.isLoading = true
       this.error = null
       
+      const { $axios } = useNuxtApp();
+
       try {
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        const respone = $axios.get('/api/tickets');
         
         // Dummy data
-        this.tickets = [
-          {
-            id: '1',
-            eventId: '1',
-            userId: '1',
-            type: 'VIP',
-            price: 150,
-            purchaseDate: '2024-03-20',
-            status: 'active',
-            qrCode: 'dummy-qr-1'
-          },
-          {
-            id: '2',
-            eventId: '1',
-            userId: '1',
-            type: 'Regular',
-            price: 75,
-            purchaseDate: '2024-03-19',
-            status: 'active',
-            qrCode: 'dummy-qr-2'
-          },
-          {
-            id: '3',
-            eventId: '2',
-            userId: '1',
-            type: 'Early Bird',
-            price: 50,
-            purchaseDate: '2024-03-18',
-            status: 'used',
-            qrCode: 'dummy-qr-3'
-          }
-        ]
+        this.tickets = respone
 
         // Store in localStorage for offline access
         localStorage.setItem('tickets', JSON.stringify(this.tickets))
