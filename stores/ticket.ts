@@ -2,21 +2,12 @@ import { defineStore } from 'pinia'
 import { BuyTicketRequest } from '~/models/api/buy-ticket/request'
 import { BuyTicketFormDto } from '~/models/dto/ticket/BuyTicketForm.dto'
 import type { IBuyTicketFormDto } from '~/models/dto/ticket/IBuyTicketForm.dto'
+import type { ITicketResponse, ITicketsResponse } from '~/models/api/tickets/response'
 
-interface Ticket {
-  id: string
-  eventId: string
-  userId: string
-  type: 'VIP' | 'Regular' | 'Early Bird'
-  price: number
-  purchaseDate: string
-  status: 'active' | 'used' | 'cancelled'
-  qrCode?: string
-}
 
 export const useTicketStore = defineStore('ticket', {
   state: () => ({
-    tickets: [] as Ticket[],
+    tickets: [] as ITicketResponse[],
     isLoading: false,
     error: null as string | null,
   }),
@@ -44,10 +35,10 @@ export const useTicketStore = defineStore('ticket', {
       try {
         // Simulate API call
         
-        const respone = $axios.get('/api/tickets');
+        const respone = await $axios.get('/api/tickets') as ITicketsResponse;
         
         // Dummy data
-        this.tickets = respone
+        this.tickets = respone.tickets;
 
         // Store in localStorage for offline access
         localStorage.setItem('tickets', JSON.stringify(this.tickets))
@@ -66,38 +57,6 @@ export const useTicketStore = defineStore('ticket', {
         this.tickets = JSON.parse(storedTickets)
       }
     },
-
-    // Add a new ticket
-    async addTicket(ticket: Omit<Ticket, 'id' | 'purchaseDate' | 'qrCode'>) {
-      this.isLoading = true
-      this.error = null
-      
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        const newTicket: Ticket = {
-          ...ticket,
-          id: Math.random().toString(36).substr(2, 9),
-          purchaseDate: new Date().toISOString().split('T')[0],
-          qrCode: `dummy-qr-${Math.random().toString(36).substr(2, 9)}`
-        }
-        
-        this.tickets.push(newTicket)
-        
-        // Update localStorage
-        localStorage.setItem('tickets', JSON.stringify(this.tickets))
-        
-        return newTicket
-      } catch (error) {
-        this.error = 'Failed to add ticket'
-        console.error('Error adding ticket:', error)
-        throw error
-      } finally {
-        this.isLoading = false
-      }
-    },
-
     // Update ticket status
     async updateTicketStatus(ticketId: string, status: Ticket['status']) {
       this.isLoading = true
