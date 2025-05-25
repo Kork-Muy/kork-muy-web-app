@@ -1,4 +1,7 @@
 import { defineStore } from 'pinia'
+import { BuyTicketRequest } from '~/models/api/buy-ticket/request'
+import { BuyTicketFormDto } from '~/models/dto/ticket/BuyTicketForm.dto'
+import type { IBuyTicketFormDto } from '~/models/dto/ticket/IBuyTicketForm.dto'
 
 interface Ticket {
   id: string
@@ -143,6 +146,29 @@ export const useTicketStore = defineStore('ticket', {
         this.error = 'Failed to update ticket status'
         console.error('Error updating ticket status:', error)
         throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async buyTicket(eventId: string, dto: IBuyTicketFormDto) {
+      this.isLoading = true
+      this.error = null
+      const userStore = useUserStore()
+      const { $axios } = useNuxtApp();
+      try {
+        const request = new BuyTicketRequest({
+          eventId,
+          ticketData: new BuyTicketFormDto(dto).toBuyTicketData()
+        })
+  
+        const response = await $axios.post('/api/tickets/buy-ticket', request)
+        console.log(response);
+        useRouter().push('/tickets')
+      } catch (error) {
+        this.error = 'Failed to buy ticket'
+        console.error('Error buying ticket:', error)
+        useRouter().push('/events')
       } finally {
         this.isLoading = false
       }

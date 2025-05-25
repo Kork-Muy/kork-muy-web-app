@@ -34,6 +34,12 @@ export const useUserStore = defineStore('user', {
       }
       return null;
     },
+    getIsAuthenticated: (state): boolean => {
+      if(window && localStorage.getItem("is_authenticated")) {
+        return localStorage.getItem("is_authenticated") === "true";
+      }
+      return state.isAuthenticated;
+    }
   },
   
   actions: {
@@ -57,6 +63,7 @@ export const useUserStore = defineStore('user', {
           localStorage.setItem("user", JSON.stringify(this.currentUser));
           localStorage.setItem("access_token", response.access_token);
           localStorage.setItem("refresh_token", response.refresh_token);
+          localStorage.setItem("is_authenticated", "true");
         }
 
         this.isAuthenticated = true
@@ -124,6 +131,7 @@ export const useUserStore = defineStore('user', {
           localStorage.setItem("user", JSON.stringify(this.currentUser));
           localStorage.setItem("access_token", accessToken);
           localStorage.setItem("refresh_token", refreshToken);
+          localStorage.setItem("is_authenticated", "true");
         }
       }
       this.isLoading = false
@@ -131,6 +139,7 @@ export const useUserStore = defineStore('user', {
     },
 
     async checkIsAuthenticated() {
+      console.log("checkIsAuthenticated", this.lastCheckedAt);
       if(this.lastCheckedAt > Date.now() - 1000 * 60 * 5) {
         return true;
       }
@@ -146,14 +155,15 @@ export const useUserStore = defineStore('user', {
           headers: {  
             Authorization: `Bearer ${tempToken}`
           }
-        });
+        }) as IProfileResponse;
         console.log("isAuthenticated", response);
-        this.currentUser = new UserDto(response as IUserDto);
+        this.currentUser = new UserDto(response.user as IUserDto);
         this.accessToken = tempToken;
         this.isAuthenticated = true;
         if(window) {
           localStorage.setItem("user", JSON.stringify(this.currentUser));
           localStorage.setItem("access_token", tempToken);
+          localStorage.setItem("is_authenticated", "true");
         }
         result = true;
       } catch (error: any) {
@@ -166,6 +176,7 @@ export const useUserStore = defineStore('user', {
           localStorage.removeItem("user");
           localStorage.removeItem("access_token");
           localStorage.removeItem("refresh_token");
+          localStorage.removeItem("is_authenticated");
         }
         result = false;
       } finally {
@@ -195,6 +206,7 @@ export const useUserStore = defineStore('user', {
         if(window) {
           localStorage.setItem("user", JSON.stringify(this.currentUser));
           localStorage.setItem("access_token", response.access_token);
+          localStorage.setItem("is_authenticated", "true");
         }
         this.isAuthenticated = true;
         console.log("refresh token", response);
@@ -207,6 +219,7 @@ export const useUserStore = defineStore('user', {
           localStorage.removeItem("user");
           localStorage.removeItem("access_token");
           localStorage.removeItem("refresh_token");
+          localStorage.removeItem("is_authenticated");
         }
         return false;
       }
@@ -227,13 +240,13 @@ export const useUserStore = defineStore('user', {
         this.currentUser = new UserDto(response.user);
         this.accessToken = response.access_token;
         this.refreshToken = response.refresh_token;
+        this.isAuthenticated = true
         if(window) {
           localStorage.setItem("user", JSON.stringify(this.currentUser));
           localStorage.setItem("access_token", response.access_token);
           localStorage.setItem("refresh_token", response.refresh_token);
+          localStorage.setItem("is_authenticated", "true");
         }
-
-        this.isAuthenticated = true
         
         return this.currentUser
       } catch (error) {

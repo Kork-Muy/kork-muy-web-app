@@ -136,7 +136,16 @@
               </div>
               
               <div class="space-y-4">
-                <div>
+                <form @submit.prevent="handleSubmit">
+                  <div>
+                    <UiLabel>Email</UiLabel>
+                    <UiInput type="email" v-model="form.email" />
+                  </div>
+                  <UiButton class="w-full" size="lg" type="submit">
+                    Register Now
+                  </UiButton>
+                </form>
+                <!-- <div>
                   <UiLabel for="tickets">Number of Tickets</UiLabel>
                   <UiInput 
                     type="number"
@@ -145,11 +154,7 @@
                     class="mt-1" 
                     min="1"
                     />
-                </div>
-                
-                <UiButton class="w-full" size="lg">
-                  Register Now
-                </UiButton>
+                </div> -->
                 
                 <div class="text-sm text-muted-foreground">
                   <p class="flex items-center mb-1">
@@ -188,13 +193,19 @@
 <script setup lang="ts">
 import { EventDto } from '~/models/dto/event/Event.dto'
 import { useEventStore } from '~/stores/event'
+import { useTicketStore } from '~/stores/ticket'
+import { useUserStore } from '~/stores/user'
+import type { IBuyTicketFormDto } from '~/models/dto/ticket/IBuyTicketForm.dto'
 
 const route = useRoute()
 const eventStore = useEventStore()
+const ticketStore = useTicketStore()
+const userStore = useUserStore()
 const { isLoading } = storeToRefs(eventStore)
 
-const ticketCount = ref(1)
-
+const form = reactive<IBuyTicketFormDto>({
+  email: userStore.user?.email || ''
+})
 const event = computed(() => {
   const eventDto = eventStore.getEventById(route.params.id as string);
   if(eventDto) {
@@ -202,6 +213,14 @@ const event = computed(() => {
   }
   return null;
 })
+const handleSubmit = () => {
+  console.log(form)
+  if(event.value?.id) {
+    ticketStore.buyTicket(event.value?.id as string, form);
+  }
+}
+
+
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)

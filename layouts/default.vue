@@ -143,7 +143,7 @@ import { useUserStore } from '~/stores/user'
 import PwaInstallButton from '~/components/PwaInstallButton.vue'
 
 const userStore = useUserStore()
-const isAuthenticated = computed(() => userStore.isAuthenticated)
+const isAuthenticated = computed(() => userStore.getIsAuthenticated)
 const user = computed(() => userStore.user)
 
 const isMobileMenuOpen = ref(false)

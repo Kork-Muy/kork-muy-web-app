@@ -3,7 +3,11 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
-
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.API_BASE_URL || '/api'
+    }
+  },
   modules: [
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
@@ -112,5 +116,5 @@ export default defineNuxtConfig({
     configPath: 'tailwind.config.ts',
   },
 
-  compatibilityDate: '2025-04-23'
+  compatibilityDate: '2025-04-23',
 })
