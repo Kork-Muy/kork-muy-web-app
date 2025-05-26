@@ -22,6 +22,7 @@ export const useUserStore = defineStore('user', {
     lastCheckedAt: 0,
     isLoading: false,
     isAuthenticated: false,
+    isRefreshing: false,
     error: null as string | null,
   }),
   
@@ -33,6 +34,14 @@ export const useUserStore = defineStore('user', {
         return new UserDto(JSON.parse(localStorage.getItem("user") || "{}"));
       }
       return null;
+    },
+    getAccessToken: (state): string => {
+      if(state.accessToken) {
+        return state.accessToken;
+      } else if(window) {
+        return localStorage.getItem("access_token") || "";
+      }
+      return "";
     },
     getIsAuthenticated: (state): boolean => {
       if(window && localStorage.getItem("is_authenticated")) {
@@ -151,6 +160,7 @@ export const useUserStore = defineStore('user', {
         } else if(window) {
           tempToken = localStorage.getItem("access_token") || '';
         }
+        console.log("tempToken", tempToken);
         const response = await $fetch('http://localhost:3001/api/auth/profile', {
           headers: {  
             Authorization: `Bearer ${tempToken}`

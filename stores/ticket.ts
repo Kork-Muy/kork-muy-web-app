@@ -13,14 +13,15 @@ export const useTicketStore = defineStore('ticket', {
   }),
 
   getters: {
-    getTicketsByEventId: (state) => (eventId: string) => {
-      return state.tickets.filter(ticket => ticket.eventId === eventId)
-    },
-    getTicketsByUserId: (state) => (userId: string) => {
-      return state.tickets.filter(ticket => ticket.userId === userId)
-    },
-    getActiveTickets: (state) => {
-      return state.tickets.filter(ticket => ticket.status === 'active')
+    getTickets: (state): ITicketResponse[] => {
+      console.log("getTickets", state);
+      if(state.tickets.length === 0 && window.localStorage) {
+        const storedTickets = localStorage.getItem('tickets')
+        if (storedTickets) {
+          return JSON.parse(storedTickets) as ITicketResponse[];
+        }
+      }
+      return state.tickets;
     },
   },
 
@@ -35,13 +36,13 @@ export const useTicketStore = defineStore('ticket', {
       try {
         // Simulate API call
         
-        const respone = await $axios.get('/api/tickets') as ITicketsResponse;
-        
-        // Dummy data
+        const respone = (await $axios.get('/api/tickets')).data as ITicketsResponse;
+        console.log("fetch tickets", respone);
+
         this.tickets = respone.tickets;
 
         // Store in localStorage for offline access
-        localStorage.setItem('tickets', JSON.stringify(this.tickets))
+        localStorage.setItem('tickets', JSON.stringify(this.tickets ?? []))
       } catch (error) {
         this.error = 'Failed to fetch tickets'
         console.error('Error fetching tickets:', error)
@@ -54,31 +55,7 @@ export const useTicketStore = defineStore('ticket', {
     loadOfflineTickets() {
       const storedTickets = localStorage.getItem('tickets')
       if (storedTickets) {
-        this.tickets = JSON.parse(storedTickets)
-      }
-    },
-    // Update ticket status
-    async updateTicketStatus(ticketId: string, status: Ticket['status']) {
-      this.isLoading = true
-      this.error = null
-      
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        const ticketIndex = this.tickets.findIndex(t => t.id === ticketId)
-        if (ticketIndex !== -1) {
-          this.tickets[ticketIndex].status = status
-          
-          // Update localStorage
-          localStorage.setItem('tickets', JSON.stringify(this.tickets))
-        }
-      } catch (error) {
-        this.error = 'Failed to update ticket status'
-        console.error('Error updating ticket status:', error)
-        throw error
-      } finally {
-        this.isLoading = false
+        this.tickets = JSON.parse(storedTickets ?? [])
       }
     },
 
@@ -112,6 +89,7 @@ export const useTicketStore = defineStore('ticket', {
         await this.fetchTickets()
       } catch (error) {
         // If API call fails, load from localStorage
+        console.log("Error fetching tickets",error);
         this.loadOfflineTickets()
       }
     }

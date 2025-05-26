@@ -10,7 +10,7 @@
       {{ ticketStore.error }}
     </div>
     
-    <div v-else-if="userTickets.length === 0" class="text-center py-12">
+    <div v-else-if="tickets.length === 0" class="text-center py-12">
       <p class="text-muted-foreground text-lg">You haven't booked any tickets yet.</p>
       <UiButton class="mt-4" @click="router.push('/events')">
         Browse Events
@@ -18,18 +18,18 @@
     </div>
     
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <UiCard v-for="ticket in userTickets" :key="ticket.id" class="overflow-hidden">
+      <UiCard v-for="ticket in tickets" :key="ticket.id" class="overflow-hidden">
         <UiCardHeader>
           <div class="flex justify-between items-start">
             <div>
-              <UiCardTitle>{{ getEventTitle(ticket.eventId) }}</UiCardTitle>
+              <UiCardTitle>{{ ticket.event.title }}</UiCardTitle>
               <UiCardDescription>
                 {{ formatDate(ticket.purchaseDate) }}
               </UiCardDescription>
             </div>
-            <UiBadge :variant="getStatusVariant(ticket.status)">
+            <!-- <UiBadge :variant="getStatusVariant(ticket.status)">
               {{ ticket.status }}
-            </UiBadge>
+            </UiBadge> -->
           </div>
         </UiCardHeader>
         
@@ -78,27 +78,18 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useTicketStore } from '~/stores/ticket'
 import { useEventStore } from '~/stores/event'
 import { useUserStore } from '~/stores/user'
+import { TicketDto } from '~/models/dto/ticket/Ticket.dto'
 
 const ticketStore = useTicketStore()
 const eventStore = useEventStore()
 const userStore = useUserStore()
 const router = useRouter()
 
-// Get tickets for current user
-const userTickets = computed(() => {
-  if (!userStore.user) return []
-  return ticketStore.getTicketsByUserId(userStore.user.id)
-})
-
-// Get event title from eventId
-const getEventTitle = (eventId) => {
-  const event = eventStore.events.find(e => e.id === eventId)
-  return event ? event.title : 'Unknown Event'
-}
+const tickets = computed(() => ticketStore.getTickets.map(ticket => new TicketDto(ticket)))
 
 // Format date
 const formatDate = (date) => {
@@ -109,34 +100,8 @@ const formatDate = (date) => {
   })
 }
 
-// Get status variant for badge
-const getStatusVariant = (status) => {
-  switch (status) {
-    case 'active':
-      return 'default'
-    case 'used':
-      return 'secondary'
-    case 'cancelled':
-      return 'destructive'
-    default:
-      return 'default'
-  }
-}
-
-// Update ticket status
-const updateTicketStatus = async (ticketId, status) => {
-  try {
-    await ticketStore.updateTicketStatus(ticketId, status)
-  } catch (error) {
-    console.error('Failed to update ticket status:', error)
-  }
-}
-
-// Initialize stores
 onMounted(async () => {
-  await Promise.all([
-    ticketStore.initialize(),
-    eventStore.fetchEvents()
-  ])
+  await ticketStore.initialize()
 })
+
 </script> 

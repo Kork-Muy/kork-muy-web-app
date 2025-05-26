@@ -17,7 +17,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     (config: InternalAxiosRequestConfig) => {
       // Get token from auth store or localStorage if needed
       const userStore = useUserStore()
-      const token = userStore.accessToken;
+      const token = userStore.getAccessToken;
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`
       }
@@ -42,18 +42,25 @@ export default defineNuxtPlugin((nuxtApp) => {
 
         try {
           const userStore = useUserStore()
-          const refreshToken = userStore.refreshToken;
-          const response = await axiosInstance.post('/api/auth/refresh-token', {
-            headers: {  
-              Authorization: `Bearer ${refreshToken}`
+          if(!userStore.isRefreshing) {
+            userStore.isRefreshing = true;
+            const refreshToken = userStore.refreshToken;
+            const response = await axiosInstance.post('/api/auth/refresh-token', {
+                headers: {  
+                Authorization: `Bearer ${refreshToken}`
+                }
+            }) as IRefreshTokenResponse;
+            userStore.accessToken = response.access_token;
+            userStore.isAuthenticated = true;
+            if(window) {
+                localStorage.setItem("access_token", response.access_token);
             }
-          }) as IRefreshTokenResponse;
-          userStore.accessToken = response.access_token;
-          userStore.isAuthenticated = true;
-          if(window) {
-            localStorage.setItem("access_token", response.access_token);
+            return axiosInstance(originalRequest)
+          } else {
+            console.log("isRefreshing", error);
+            userStore.isRefreshing = false;
+            navigateTo('/login');
           }
-          return axiosInstance(originalRequest)
         } catch (refreshError) {
           // Handle refresh token failure
           localStorage.removeItem('token')
