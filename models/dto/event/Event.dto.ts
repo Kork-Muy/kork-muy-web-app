@@ -38,7 +38,6 @@ export class EventDto implements IEventDto {
     }
 
     get formattedDate(): string {
-        console.log("this.date", this.date)
         return new Intl.DateTimeFormat('en-US', { 
             month: 'short', 
             day: 'numeric', 

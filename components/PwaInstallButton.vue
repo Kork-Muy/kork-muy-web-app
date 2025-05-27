@@ -16,17 +16,8 @@ let deferredPrompt = null
 
 // Listen for the beforeinstallprompt event
 onMounted(() => {
-  console.log('Current display mode:', window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser')
-  console.log('Is PWA installed:', window.matchMedia('(display-mode: standalone)').matches)
-  console.log('Is PWA supported:', 'serviceWorker' in navigator)
-  console.log('Is PWA in standalone mode:', window.matchMedia('(display-mode: standalone)').matches)
-  console.log('Is PWA in fullscreen mode:', window.matchMedia('(display-mode: fullscreen)').matches)
-  console.log('Is PWA in minimal-ui mode:', window.matchMedia('(display-mode: minimal-ui)').matches)
-  console.log('Is PWA in browser mode:', window.matchMedia('(display-mode: browser)').matches)
-
   // Check if the app is already installed
   if (window.matchMedia('(display-mode: standalone)').matches) {
-    console.log('App is already installed in standalone mode')
     canInstall.value = false
     return
   }

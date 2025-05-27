@@ -153,7 +153,6 @@ const stopScanner = async () => {
 
 // Handle successful scan
 const onScanSuccess = (decodedText) => {
-  console.log('Scanned QR Code:', decodedText)
   scanResults.value.unshift({
     ticketId: decodedText,
     timestamp: new Date()

@@ -1,8 +1,10 @@
 <template>
-  <NuxtLayout>
-    <VitePwaManifest />
-    <NuxtPage />
-  </NuxtLayout>
+  <ClientOnly>
+    <NuxtLayout>
+      <VitePwaManifest />
+      <NuxtPage />
+    </NuxtLayout>
+  </ClientOnly>
 </template>
 <script setup lang="ts">
 import { useTicketStore } from '~/stores/ticket'
@@ -13,10 +15,12 @@ const eventStore = useEventStore()
 const userStore = useUserStore()
 
 onMounted(async () => {
-  await Promise.all([
-    ticketStore.initialize(),
-    eventStore.fetchEvents(),
-    userStore.checkIsAuthenticated()
-  ])
+  if(userStore.getIsAuthenticated) {
+    await Promise.all([
+      userStore.fetchProfile(),
+      ticketStore.initialize(),
+      eventStore.fetchEvents()
+    ])
+  }
 })
 </script>

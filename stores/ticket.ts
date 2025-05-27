@@ -14,7 +14,6 @@ export const useTicketStore = defineStore('ticket', {
 
   getters: {
     getTickets: (state): ITicketResponse[] => {
-      console.log("getTickets", state);
       if(state.tickets.length === 0 && window.localStorage) {
         const storedTickets = localStorage.getItem('tickets')
         if (storedTickets) {
@@ -37,7 +36,6 @@ export const useTicketStore = defineStore('ticket', {
         // Simulate API call
         
         const respone = (await $axios.get('/api/tickets')).data as ITicketsResponse;
-        console.log("fetch tickets", respone);
 
         this.tickets = respone.tickets;
 
@@ -45,7 +43,6 @@ export const useTicketStore = defineStore('ticket', {
         localStorage.setItem('tickets', JSON.stringify(this.tickets ?? []))
       } catch (error) {
         this.error = 'Failed to fetch tickets'
-        console.error('Error fetching tickets:', error)
       } finally {
         this.isLoading = false
       }
@@ -71,7 +68,6 @@ export const useTicketStore = defineStore('ticket', {
         })
   
         const response = await $axios.post('/api/tickets/buy-ticket', request)
-        console.log(response);
         useRouter().push('/tickets')
       } catch (error) {
         this.error = 'Failed to buy ticket'
@@ -89,7 +85,6 @@ export const useTicketStore = defineStore('ticket', {
         await this.fetchTickets()
       } catch (error) {
         // If API call fails, load from localStorage
-        console.log("Error fetching tickets",error);
         this.loadOfflineTickets()
       }
     }

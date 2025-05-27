@@ -214,7 +214,6 @@ const event = computed(() => {
   return null;
 })
 const handleSubmit = () => {
-  console.log(form)
   if(event.value?.id) {
     ticketStore.buyTicket(event.value?.id as string, form);
   }

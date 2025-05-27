@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import type { IEventDto } from '~/models/dto/event/IEvent.dto';
 import { EventDto } from '~/models/dto/event/Event.dto';
+import type { IEventResponse } from '~/models/api/events/response';
 
 export const useEventStore = defineStore('event', {
   state: () => ({
@@ -39,11 +40,9 @@ export const useEventStore = defineStore('event', {
       this.error = null
       
       try {
-        // In a real app, this would be an API call
-        // For now, we'll use mock data
-        const response = await $fetch(process.env.API_URL || 'http://localhost:3001' + '/api/events')
-        console.log("response", response);
-        this.events = response as EventDto[];
+        const { $axios } = useNuxtApp();  
+        const response = (await $axios.get('/api/events')).data as IEventResponse;
+        this.events = response.events.map((event: IEventDto) => new EventDto(event));
         if(window) {
           localStorage.setItem("events", JSON.stringify(this.events));
         }

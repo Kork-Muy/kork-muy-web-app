@@ -10,8 +10,6 @@ import { UserDto } from '~/models/dto/user/User.dto'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    accessToken: "",
-    refreshToken: "",
     currentUser: {
       id: '',
       firstname: '',
@@ -22,26 +20,25 @@ export const useUserStore = defineStore('user', {
     lastCheckedAt: 0,
     isLoading: false,
     isAuthenticated: false,
+    isConnected: true,
     isRefreshing: false,
     error: null as string | null,
   }),
   
   getters: {
     user: (state): UserDto | null => {
-      if(state.currentUser.id) {
+      if(state.isAuthenticated) {
         return new UserDto(state.currentUser);
-      } else if(window) {
-        return new UserDto(JSON.parse(localStorage.getItem("user") || "{}"));
+      } else if(state.isAuthenticated && window) {
+        return new UserDto(JSON.parse(localStorage.getItem("user") || state.currentUser.toString()));
       }
-      return null;
-    },
-    getAccessToken: (state): string => {
-      if(state.accessToken) {
-        return state.accessToken;
-      } else if(window) {
-        return localStorage.getItem("access_token") || "";
-      }
-      return "";
+      return new UserDto({
+        id: '',
+        firstname: '',
+        lastname: '',
+        email: '',
+        avatar: '',
+      });
     },
     getIsAuthenticated: (state): boolean => {
       if(window && localStorage.getItem("is_authenticated")) {
@@ -59,22 +56,15 @@ export const useUserStore = defineStore('user', {
       try {
         // In a real app, this would be an API call
         const requestDto = new LoginRequest(request);
+        const { $axios } = useNuxtApp();
         
-        const response = await $fetch('http://localhost:3001/api/auth/login', {
-          method: 'POST',
-          body: requestDto.toString()
-        }) as ILoginResponse;
+        const response = await $axios.post('/api/auth/login', requestDto.toString()) as ILoginResponse;
 
         this.currentUser = new UserDto(response.user);
-        this.accessToken = response.access_token;
-        this.refreshToken = response.refresh_token;
         if(window) {
           localStorage.setItem("user", JSON.stringify(this.currentUser));
-          localStorage.setItem("access_token", response.access_token);
-          localStorage.setItem("refresh_token", response.refresh_token);
           localStorage.setItem("is_authenticated", "true");
         }
-
         this.isAuthenticated = true
         
         return this.currentUser
@@ -98,7 +88,8 @@ export const useUserStore = defineStore('user', {
       
       try {
         // In a real app, this would be an API call
-        await new Promise(resolve => setTimeout(resolve, 500))
+        const { $axios } = useNuxtApp();
+        await $axios.post('/api/auth/logout');
         
         this.currentUser = {
           id: '',
@@ -107,13 +98,10 @@ export const useUserStore = defineStore('user', {
           email: '',
           avatar: '',
         } as IUserDto;
-        this.accessToken = '';
-        this.refreshToken = '';
         this.isAuthenticated = false;
         if(window) {
           localStorage.removeItem("user");
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
+          localStorage.setItem("is_authenticated", "false");
         }
       } catch (error) {
         console.error(error)
@@ -122,24 +110,17 @@ export const useUserStore = defineStore('user', {
       }
     },
     
-    async setUser(accessToken: string, refreshToken: string) {
+    async fetchProfile() {
       const router = useRouter()
       this.isLoading = true
       this.error = null
-      this.accessToken = accessToken;
-      this.refreshToken = refreshToken;
-      const response = await $fetch('http://localhost:3001/api/auth/profile', {
-        headers: {  
-          Authorization: `Bearer ${accessToken}`
-        }
-      }) as IProfileResponse;
+      const { $axios } = useNuxtApp();
+      const response = (await $axios.get('/api/auth/profile')).data as IProfileResponse;
       if (response) {
         this.currentUser = response.user;
         this.isAuthenticated = true;
         if(window) {
           localStorage.setItem("user", JSON.stringify(this.currentUser));
-          localStorage.setItem("access_token", accessToken);
-          localStorage.setItem("refresh_token", refreshToken);
           localStorage.setItem("is_authenticated", "true");
         }
       }
@@ -147,88 +128,23 @@ export const useUserStore = defineStore('user', {
       router.push('/')
     },
 
-    async checkIsAuthenticated() {
-      console.log("checkIsAuthenticated", this.lastCheckedAt);
-      if(this.lastCheckedAt > Date.now() - 1000 * 60 * 5) {
-        return true;
-      }
-      let result = false;
-      try {
-        let tempToken = '';
-        if(this.accessToken) {
-          tempToken = this.accessToken;
-        } else if(window) {
-          tempToken = localStorage.getItem("access_token") || '';
-        }
-        console.log("tempToken", tempToken);
-        const response = await $fetch('http://localhost:3001/api/auth/profile', {
-          headers: {  
-            Authorization: `Bearer ${tempToken}`
-          }
-        }) as IProfileResponse;
-        console.log("isAuthenticated", response);
-        this.currentUser = new UserDto(response.user as IUserDto);
-        this.accessToken = tempToken;
-        this.isAuthenticated = true;
-        if(window) {
-          localStorage.setItem("user", JSON.stringify(this.currentUser));
-          localStorage.setItem("access_token", tempToken);
-          localStorage.setItem("is_authenticated", "true");
-        }
-        result = true;
-      } catch (error: any) {
-        if(error?.statusCode === 401) {
-          result = await this.refreshNewAccessToken();
-        }
-        console.error("isAuthenticated", error);
-        this.isAuthenticated = false;
-        if(window) {
-          localStorage.removeItem("user");
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
-          localStorage.removeItem("is_authenticated");
-        }
-        result = false;
-      } finally {
-        if(this.isAuthenticated) {
-          this.lastCheckedAt = Date.now();
-        }
-        return result;
-      }
-    },
-
     async refreshNewAccessToken() {
       try {
-        let refreshToken = '';
-        if(this.refreshToken) {
-          refreshToken = this.refreshToken;
-        } else if(window) {
-          refreshToken = localStorage.getItem("refresh_token") || '';
-        }
-        const response = await $fetch('http://localhost:3001/api/auth/refresh-token', {
-          method: 'POST',
-          headers: {  
-            Authorization: `Bearer ${refreshToken}`
-          }
-        }) as IRefreshTokenResponse;
+        const { $axios } = useNuxtApp();
+        this.isRefreshing = true;
+        const response = await $axios.post('/api/auth/refresh-token') as IRefreshTokenResponse;
         this.currentUser = new UserDto(response.user);
-        this.accessToken = response.access_token;
         if(window) {
           localStorage.setItem("user", JSON.stringify(this.currentUser));
-          localStorage.setItem("access_token", response.access_token);
           localStorage.setItem("is_authenticated", "true");
         }
         this.isAuthenticated = true;
-        console.log("refresh token", response);
         return true;
       } catch (error) {
-        console.error("refresh token", error);
         this.isAuthenticated = false;
         
         if(window) {
           localStorage.removeItem("user");
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
           localStorage.removeItem("is_authenticated");
         }
         return false;
@@ -241,20 +157,13 @@ export const useUserStore = defineStore('user', {
       
       try {
         const requestDto = new RegisterRequest(request);
-
-        const response = await $fetch('http://localhost:3001/api/auth/register', {
-          method: 'POST',
-          body: requestDto.toString()
-        }) as IRegisterResponse;
+        const { $axios } = useNuxtApp();
+        const response = await $axios.post('/api/auth/register', requestDto.toString()) as IRegisterResponse;
         // Mock successful registration
         this.currentUser = new UserDto(response.user);
-        this.accessToken = response.access_token;
-        this.refreshToken = response.refresh_token;
         this.isAuthenticated = true
         if(window) {
           localStorage.setItem("user", JSON.stringify(this.currentUser));
-          localStorage.setItem("access_token", response.access_token);
-          localStorage.setItem("refresh_token", response.refresh_token);
           localStorage.setItem("is_authenticated", "true");
         }
         

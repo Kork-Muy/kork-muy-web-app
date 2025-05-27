@@ -1,5 +1,6 @@
 <template>
-  <div class="min-h-screen flex flex-col">
+  <ClientOnly>
+    <div class="min-h-screen flex flex-col">
     <header class="border-b">
       <div class="container mx-auto px-4 py-4 flex justify-between items-center">
         <NuxtLink to="/" class="text-2xl font-bold text-primary">
@@ -135,6 +136,7 @@
       </div>
     </footer>
   </div>
+  </ClientOnly>
 </template>
 
 <script setup>

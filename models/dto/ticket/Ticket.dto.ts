@@ -8,8 +8,8 @@ export class TicketDto implements ITicketDto {
     qrcode: string;
     ticketData: any;
     isUsed: boolean;
-    usedAt?: string;
-    transferredFrom?: string;
+    usedAt: string | null;
+    transferredFrom: string | null;
     isTransferable: boolean;
     event: IEventDto;
     user: IUserDto;
