@@ -14,6 +14,15 @@ const ticketStore = useTicketStore()
 const eventStore = useEventStore()
 const userStore = useUserStore()
 
+useHead({
+  meta: [
+    {
+      name: 'viewport',
+      content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
+    }
+  ]
+})
+
 onMounted(async () => {
   if(userStore.getIsAuthenticated) {
     await Promise.all([

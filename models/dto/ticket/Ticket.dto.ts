@@ -1,7 +1,7 @@
 import type { ITicketResponse } from "~/models/api/tickets/response"
-import type { IEventDto } from "../event/IEvent.dto"
-import type { IUserDto } from "../user/IUser.dto"
 import type { ITicketDto } from "./ITicket.dto"
+import { EventDto } from "../event/Event.dto";
+import { UserDto } from "../user/User.dto";
 
 export class TicketDto implements ITicketDto {
     id: string;
@@ -11,8 +11,8 @@ export class TicketDto implements ITicketDto {
     usedAt: string | null;
     transferredFrom: string | null;
     isTransferable: boolean;
-    event: IEventDto;
-    user: IUserDto;
+    event: EventDto;
+    user: UserDto;
 
     constructor(data: ITicketResponse) {
         this.id = data.id;
@@ -22,7 +22,7 @@ export class TicketDto implements ITicketDto {
         this.usedAt = data.usedAt;
         this.transferredFrom = data.transferredFrom;
         this.isTransferable = data.isTransferable;
-        this.event = data.event;
-        this.user = data.user;
+        this.event = new EventDto(data.event);
+        this.user = new UserDto(data.user);
     }
 }

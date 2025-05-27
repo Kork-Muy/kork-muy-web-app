@@ -18,62 +18,7 @@
     </div>
     
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <UiCard v-for="ticket in tickets" :key="ticket.id" class="overflow-hidden">
-        <UiCardHeader>
-          <div class="flex justify-between items-start">
-            <div>
-              <UiCardTitle>{{ ticket.event.title }}</UiCardTitle>
-              <UiCardDescription>
-                {{ formatDate(ticket.purchaseDate) }}
-              </UiCardDescription>
-            </div>
-            <!-- <UiBadge :variant="getStatusVariant(ticket.status)">
-              {{ ticket.status }}
-            </UiBadge> -->
-          </div>
-        </UiCardHeader>
-        
-        <UiCardContent>
-          <div class="space-y-4">
-            <div class="flex justify-between items-center">
-              <span class="text-muted-foreground">Ticket Type</span>
-              <span class="font-medium">{{ ticket.type }}</span>
-            </div>
-            
-            <div class="flex justify-between items-center">
-              <span class="text-muted-foreground">Price</span>
-              <span class="font-medium">${{ ticket.price }}</span>
-            </div>
-            
-            <div v-if="ticket.qrCode" class="mt-4">
-              <div class="bg-muted p-4 rounded-lg text-center">
-                <p class="text-sm text-muted-foreground mb-2">QR Code</p>
-                <div class="bg-white p-2 rounded inline-block">
-                  {{ ticket.qrCode }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </UiCardContent>
-        
-        <UiCardFooter class="flex justify-between">
-          <UiButton 
-            v-if="ticket.status === 'active'"
-            variant="outline" 
-            @click="updateTicketStatus(ticket.id, 'used')"
-          >
-            Mark as Used
-          </UiButton>
-          
-          <UiButton 
-            v-if="ticket.status === 'active'"
-            variant="destructive" 
-            @click="updateTicketStatus(ticket.id, 'cancelled')"
-          >
-            Cancel Ticket
-          </UiButton>
-        </UiCardFooter>
-      </UiCard>
+      <TicketCard v-for="ticket in tickets" :ticket="ticket" :key="ticket.id" class="overflow-hidden" />
     </div>
   </div>
 </template>
@@ -90,15 +35,6 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const tickets = computed(() => ticketStore.getTickets.map(ticket => new TicketDto(ticket)))
-
-// Format date
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
 
 onMounted(async () => {
   await ticketStore.initialize()

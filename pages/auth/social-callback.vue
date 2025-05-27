@@ -14,6 +14,7 @@ onMounted(async () => {
 
     try {
         await userStore.fetchProfile();
+        router.push('/')
     } catch (err) {
         console.error('Social callback error:', err)
         error.value = 'Failed to authenticate. Please try again.'

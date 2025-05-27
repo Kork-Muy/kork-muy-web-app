@@ -58,7 +58,7 @@ export const useUserStore = defineStore('user', {
         const requestDto = new LoginRequest(request);
         const { $axios } = useNuxtApp();
         
-        const response = await $axios.post('/api/auth/login', requestDto.toString()) as ILoginResponse;
+        const response = (await $axios.post('/api/auth/login', requestDto.toString())).data as ILoginResponse;
 
         this.currentUser = new UserDto(response.user);
         if(window) {
@@ -85,7 +85,6 @@ export const useUserStore = defineStore('user', {
     
     async logout() {
       this.isLoading = true
-      
       try {
         // In a real app, this would be an API call
         const { $axios } = useNuxtApp();
@@ -111,7 +110,6 @@ export const useUserStore = defineStore('user', {
     },
     
     async fetchProfile() {
-      const router = useRouter()
       this.isLoading = true
       this.error = null
       const { $axios } = useNuxtApp();
@@ -125,7 +123,6 @@ export const useUserStore = defineStore('user', {
         }
       }
       this.isLoading = false
-      router.push('/')
     },
 
     async refreshNewAccessToken() {
@@ -158,7 +155,7 @@ export const useUserStore = defineStore('user', {
       try {
         const requestDto = new RegisterRequest(request);
         const { $axios } = useNuxtApp();
-        const response = await $axios.post('/api/auth/register', requestDto.toString()) as IRegisterResponse;
+        const response = (await $axios.post('/api/auth/register', requestDto.toString())).data as IRegisterResponse;
         // Mock successful registration
         this.currentUser = new UserDto(response.user);
         this.isAuthenticated = true

@@ -24,11 +24,13 @@
     "nuxt": "^3.10.3",
     "nuxt-icon": "^0.6.8",
     "pinia": "^2.1.7",
+    "qrcode.vue": "^3.6.0",
     "radix-vue": "^1.4.9",
     "reka-ui": "^2.2.0",
     "shadcn-nuxt": "^0.9.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "vaul-vue": "^0.4.1",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
   },
