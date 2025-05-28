@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import type { IEventDto } from '~/models/dto/event/IEvent.dto';
 import { EventDto } from '~/models/dto/event/Event.dto';
 import type { IEventResponse } from '~/models/api/events/response';
+import { QrCode } from 'lucide-vue-next';
 
 export const useEventStore = defineStore('event', {
   state: () => ({
@@ -76,6 +77,11 @@ export const useEventStore = defineStore('event', {
       } finally {
         this.isLoading = false
       }
+    },
+    async checkTicket(qrcode: string, event: EventDto) {
+      const { $axios } = useNuxtApp();
+      const response = (await $axios.post('/api/events/check-in-ticket', { qrcode, eventId: event.id })).data;
+      return response;
     }
   }
 })

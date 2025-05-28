@@ -16,9 +16,6 @@
           <NuxtLink to="/events" class="text-foreground hover:text-primary transition-colors">
             Events
           </NuxtLink>
-          <NuxtLink to="/events/manage" class="text-foreground hover:text-primary transition-colors">
-            Manage
-          </NuxtLink>
           <NuxtLink to="/create" class="text-foreground hover:text-primary transition-colors">
             Create Event
           </NuxtLink>

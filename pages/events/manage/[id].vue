@@ -62,11 +62,11 @@
       <div class="space-y-4">
         <h2 class="text-2xl font-semibold">Scan Results</h2>
         <div class="bg-card p-4 rounded-lg">
-          <div v-if="scanResults.length === 0" class="text-center py-8">
+          <!-- <div v-if="scanResults.length === 0" class="text-center py-8">
             <p class="text-muted-foreground">No tickets scanned yet</p>
-          </div>
+          </div> -->
 
-          <div v-else class="space-y-4">
+          <!-- <div v-else class="space-y-4">
             <div v-for="result in scanResults" :key="result.timestamp" class="p-4 border rounded-lg">
               <div class="flex justify-between items-start">
                 <div>
@@ -77,22 +77,25 @@
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Html5Qrcode } from 'html5-qrcode'
 
 const router = useRouter()
+const route = useRoute()
+const eventStore = useEventStore()
+const event = computed(() => eventStore.getEventById(route.params.id as string))
 const isCameraActive = ref(false)
-const scanResults = ref([])
+// const scanResults = ref([])
 const cameraError = ref(null)
 const currentCamera = ref('environment')
-let html5QrCode = null
+let html5QrCode: Html5Qrcode | null = null;
 
 // Check if running on mobile Safari
 const isMobileSafari = computed(() => {
@@ -129,7 +132,7 @@ const startScanner = async () => {
     } else {
       throw new Error('No cameras found')
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to start scanner:', error)
     cameraError.value = error.message || 'Failed to start camera'
   }
@@ -152,29 +155,15 @@ const stopScanner = async () => {
 // Switch between front and back cameras
 
 // Handle successful scan
-const onScanSuccess = (decodedText) => {
-  scanResults.value.unshift({
-    ticketId: decodedText,
-    timestamp: new Date()
-  })
+const onScanSuccess = async(decodedText: string) => {
+  console.log(decodedText)
+  await eventStore.checkTicket(decodedText, event.value);
   stopScanner()
 }
 
 // Handle scan failure
-const onScanFailure = (error) => {
+const onScanFailure = (error: any) => {
   console.warn('Scan failed:', error)
-}
-
-// Format date
-const formatDate = (date) => {
-  return new Date(date).toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  })
 }
 
 // Cleanup on component unmount

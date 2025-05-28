@@ -22,6 +22,10 @@
           <Icon name="heroicons:arrow-left" class="w-4 h-4 mr-1" />
           Back to Events
         </NuxtLink>
+        <NuxtLink :to="`/events/manage/${event.id}`" class="text-primary hover:underline flex items-center">
+          <Icon name="heroicons:pencil" class="w-4 h-4 mr-1" />
+          Manage
+        </NuxtLink>
       </div>
       
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
