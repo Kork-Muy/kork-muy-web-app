@@ -12,13 +12,15 @@ export default defineNuxtPlugin(() => {
             },
             onOfflineReady() {
                 console.log('App ready to work offline')
-                // enable offline mode in store
-                const eventStore = useEventStore()
-                eventStore.setOfflineMode(true)
-                const ticketStore = useTicketStore()
-                ticketStore.setOfflineMode(true)
-                const userStore = useUserStore()
-                userStore.setOfflineMode(true)
+                // check if offline before enable offline mode
+                if(navigator.onLine) {
+                    const eventStore = useEventStore();
+                    eventStore.setOfflineMode(true);
+                    const ticketStore = useTicketStore();
+                    ticketStore.setOfflineMode(true);
+                    const userStore = useUserStore();
+                    userStore.setOfflineMode(true);
+                }
             },
         })
     }
