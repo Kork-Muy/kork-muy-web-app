@@ -10,6 +10,7 @@ export const useTicketStore = defineStore('ticket', {
     tickets: [] as ITicketResponse[],
     isLoading: false,
     error: null as string | null,
+    offlineMode: false,
   }),
 
   getters: {
@@ -56,6 +57,10 @@ export const useTicketStore = defineStore('ticket', {
       }
     },
 
+    setOfflineMode(offlineMode: boolean) {
+      this.offlineMode = offlineMode;
+    },
+
     async buyTicket(eventId: string, dto: IBuyTicketFormDto) {
       this.isLoading = true
       this.error = null
@@ -80,12 +85,10 @@ export const useTicketStore = defineStore('ticket', {
 
     // Initialize store
     async initialize() {
-      // Try to fetch from API first
-      try {
-        await this.fetchTickets()
-      } catch (error) {
-        // If API call fails, load from localStorage
-        this.loadOfflineTickets()
+      if(this.offlineMode) {
+        this.loadOfflineTickets();
+      } else {
+        this.fetchTickets();
       }
     }
   }

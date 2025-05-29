@@ -23,6 +23,7 @@ export const useUserStore = defineStore('user', {
     isConnected: true,
     isRefreshing: false,
     error: null as string | null,
+    offlineMode: false,
   }),
   
   getters: {
@@ -171,6 +172,25 @@ export const useUserStore = defineStore('user', {
         throw error
       } finally {
         this.isLoading = false
+      }
+    },
+
+    setOfflineMode(offlineMode: boolean) {
+      this.offlineMode = offlineMode;
+    },
+
+    loadOfflineTickets() {
+      if(window) {
+        this.currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        this.isAuthenticated = localStorage.getItem("is_authenticated") === "true";
+      }
+    },
+
+    async initialize() {
+      if(this.offlineMode) {
+        this.loadOfflineTickets();
+      } else {
+        this.fetchProfile();
       }
     }
   }

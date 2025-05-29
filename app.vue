@@ -26,9 +26,9 @@ useHead({
 onMounted(async () => {
   if(userStore.getIsAuthenticated) {
     await Promise.all([
-      userStore.fetchProfile(),
+      userStore.initialize(),
       ticketStore.initialize(),
-      eventStore.fetchEvents()
+      eventStore.initialize()
     ])
   }
 })

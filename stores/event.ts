@@ -9,6 +9,7 @@ export const useEventStore = defineStore('event', {
     events: [] as IEventDto[],
     isLoading: false,
     error: null as string | null,
+    offlineMode: false,
   }),
   
   getters: {
@@ -37,6 +38,10 @@ export const useEventStore = defineStore('event', {
   
   actions: {
     async fetchEvents() {
+      if(this.offlineMode) {
+        return;
+      }
+
       this.isLoading = true
       this.error = null
       
@@ -53,6 +58,10 @@ export const useEventStore = defineStore('event', {
       } finally {
         this.isLoading = false
       }
+    },
+
+    setOfflineMode(offlineMode: boolean) {
+      this.offlineMode = offlineMode;
     },
     
     async addEvent(event: Omit<EventDto, 'id'>) {
@@ -82,6 +91,20 @@ export const useEventStore = defineStore('event', {
       const { $axios } = useNuxtApp();
       const response = (await $axios.post('/api/events/check-in-ticket', { qrcode, eventId: event.id })).data;
       return response;
+    },
+
+    loadOfflineEvents() {
+      if(window) {
+        this.events = JSON.parse(localStorage.getItem("events") || "[]");
+      }
+    },
+
+    async initialize() {
+      if(this.offlineMode) {
+        this.loadOfflineEvents();
+      } else {
+        this.fetchEvents();
+      }
     }
   }
 })
