@@ -95,15 +95,15 @@ export const useEventStore = defineStore('event', {
 
     loadOfflineEvents() {
       if(window) {
-        this.events = JSON.parse(localStorage.getItem("events") || "[]");
+        this.events = [];
       }
     },
 
     async initialize() {
-      if(this.offlineMode) {
-        this.loadOfflineEvents();
-      } else {
+      if(navigator.onLine) {
         this.fetchEvents();
+      } else {
+        this.loadOfflineEvents();
       }
     }
   }

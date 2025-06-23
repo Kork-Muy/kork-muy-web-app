@@ -85,10 +85,10 @@ export const useTicketStore = defineStore('ticket', {
 
     // Initialize store
     async initialize() {
-      if(this.offlineMode) {
-        this.loadOfflineTickets();
-      } else {
+      if(navigator.onLine) {
         this.fetchTickets();
+      } else {
+        this.loadOfflineTickets();
       }
     }
   }

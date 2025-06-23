@@ -13,7 +13,6 @@ import { useEventStore } from '~/stores/event'
 const ticketStore = useTicketStore()
 const eventStore = useEventStore()
 const userStore = useUserStore()
-
 useHead({
   meta: [
     {
